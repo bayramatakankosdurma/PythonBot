@@ -1,0 +1,54 @@
+import os
+import discord                                                          
+from discord.ext import commands #bot komutlarını dahil eder
+
+intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True, presences=True)#bot yetkilerini belirler
+intents.members = True
+bot = commands.Bot(command_prefix='!aa ', intents=intents)  #bot kullanıcısını burada tanımlıyoruz.            
+from dotenv import load_dotenv
+load_dotenv()
+
+GUILD = os.environ['GUILD']                                             
+TOKEN = os.environ['TOKEN']
+#Asenkron programlama, işin parçalara ayrılıp tüm işlemlerin aynı anda sürdürülmesini sağlar. Yani asenkron programlama ile programımız içerisinde yazdığımız bir kodu işletebilirken, aynı program içerisinde diğer kodları da işletebiliriz. Bu sayede kullanıcı programımızın bir bölümünü kullanırken, başka bir bölümü ile de işlem yapabilir. Bu kodda bu yöntem async def tanımlamalarında vardır.
+
+#botun bazı olaylara tepki vermesini sağlayan fonksiyonları yazmak için @bot.event şeklinde bir tanımlama yapılır.
+#bu eventler hakkında daha fazla bilgi için python discord kütüphanesini ziyaret edebilirsiniz.
+@bot.event
+async def on_ready():
+    for guild in bot.guilds:
+        if guild.name == GUILD:
+            break                                                                   
+      #bu kod parçası botumuz sunucuya katıldığında konsola bağlandığı sunucuyu ve o sunucunun id'sini yazdırır.
+    print(
+      #isim = bot.user
+      #print("{} ekteki sunucuya katıldı".format(isim))
+      #yukarıdaki iki yorum print komutu içinde format yapmasaydık yazmamız gereken işlemleri göstermektedir.
+        f'{bot.user} ekteki sunucuya bağlandı:\n'
+        f'{guild.name}(id: {guild.id})'
+    )
+
+@bot.event
+async def on_member_join(member):
+  print(f"{member} aramıza katıldı. Hoş geldi!")
+  #bir kullanıcı sunucuya katıldığında hos-geldin kanalına "...... aramıza katıldı. Hoş geldin!" yazdırır.
+  channel = discord.utils.get(member.guild.text_channels, name="hos-geldin")
+  await channel.send(f"{member} aramıza katıldı. Hoş geldin!")
+
+@bot.event
+async def on_member_remove(member):
+  print(f"{member} aramızdan ayrıldı. Güle güle :(")
+  #bir kullanıcı sunucudan ayrıldığında gidenler kanalına "...... aramızdan ayrıldı. Güle güle:(" yazdırır.
+  channel = discord.utils.get(member.guild.text_channels, name="gidenler")
+  await channel.send(f"{member} aramızdan ayrıldı. Güle güle:(")                            
+
+@bot.event
+async def on_message(message):
+  if message.author == bot.user: #bu kod parçası mesajın kullanıcıdan gelip gelmediğini kontrol eder. kullanıcıdan gelmediyse return eder
+    return
+    
+  if message.content == 'Merhabalar':                                             
+    await message.channel.send('Merhabalar')
+    #mesaj kullanıcıdan geldiyse ve içeriği "Merhabalar" ise botumuz mesajın geldiği kanala Merhabalar yazarak geri cevap verir.
+    
+bot.run(TOKEN)   #botumuzu çalıştırmayı sağlayan kod parçası                              
